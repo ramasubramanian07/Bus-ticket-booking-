@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -463,177 +463,163 @@
     </div>
 
     <script>
-        // ========== INITIALIZATION ==========
-        const bookingForm = document.getElementById('bookingForm');
-        const formPage = document.querySelector('.form-page');
-        const ticketPage = document.querySelector('.ticket-page');
-        const goBackBtn = document.getElementById('goBackBtn');
+        // ========== WAIT FOR DOM LOAD ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing...');
 
-        // Form inputs
-        const busNoInput = document.getElementById('busNo');
-        const busDateInput = document.getElementById('busDate');
-        const fromStopInput = document.getElementById('fromStop');
-        const toStopInput = document.getElementById('toStop');
-        const amountInput = document.getElementById('amount');
+            // ========== INITIALIZATION ==========
+            const bookingForm = document.getElementById('bookingForm');
+            const formPage = document.querySelector('.form-page');
+            const ticketPage = document.querySelector('.ticket-page');
+            const goBackBtn = document.getElementById('goBackBtn');
 
-        // Autocomplete lists
-        const fromList = document.getElementById('fromList');
-        const toList = document.getElementById('toList');
+            // Form inputs
+            const busNoInput = document.getElementById('busNo');
+            const busDateInput = document.getElementById('busDate');
+            const fromStopInput = document.getElementById('fromStop');
+            const toStopInput = document.getElementById('toStop');
+            const amountInput = document.getElementById('amount');
 
-        // Ticket display elements
-        const ticketBusNo = document.getElementById('ticketBusNo');
-        const ticketNumber = document.getElementById('ticketNumber');
-        const ticketDateDisplay = document.getElementById('ticketDateDisplay');
-        const ticketTimeDisplay = document.getElementById('ticketTimeDisplay');
-        const ticketFromDisplay = document.getElementById('ticketFromDisplay');
-        const ticketToDisplay = document.getElementById('ticketToDisplay');
-        const ticketAmountDisplay = document.getElementById('ticketAmountDisplay');
+            // Autocomplete lists
+            const fromList = document.getElementById('fromList');
+            const toList = document.getElementById('toList');
 
-        // ========== STORAGE MANAGEMENT ==========
-        function getStopsFromStorage() {
-            const stops = localStorage.getItem('busStops');
-            return stops ? JSON.parse(stops) : { from: [], to: [] };
-        }
+            // Ticket display elements
+            const ticketBusNo = document.getElementById('ticketBusNo');
+            const ticketNumber = document.getElementById('ticketNumber');
+            const ticketDateDisplay = document.getElementById('ticketDateDisplay');
+            const ticketTimeDisplay = document.getElementById('ticketTimeDisplay');
+            const ticketFromDisplay = document.getElementById('ticketFromDisplay');
+            const ticketToDisplay = document.getElementById('ticketToDisplay');
+            const ticketAmountDisplay = document.getElementById('ticketAmountDisplay');
 
-        function saveStopsToStorage(stops) {
-            localStorage.setItem('busStops', JSON.stringify(stops));
-        }
-
-        function addStopToStorage(type, stop) {
-            if (!stop.trim()) return;
-            
-            const stops = getStopsFromStorage();
-            const stopUpper = stop.toUpperCase();
-            
-            if (!stops[type].includes(stopUpper)) {
-                stops[type].unshift(stopUpper);
-                if (stops[type].length > 10) stops[type].pop(); // Keep only last 10
-                saveStopsToStorage(stops);
-            }
-        }
-
-        // ========== AUTOCOMPLETE ==========
-        function filterStops(input, type) {
-            const stops = getStopsFromStorage();
-            const list = stops[type];
-            const filtered = list.filter(stop => 
-                stop.toLowerCase().includes(input.toLowerCase())
-            );
-            return filtered;
-        }
-
-        function showAutocompleteSuggestions(input, filteredStops, listElement, targetInput) {
-            listElement.innerHTML = '';
-            
-            if (input.trim() === '' || filteredStops.length === 0) {
-                listElement.classList.remove('active');
+            // ========== VERIFY ALL ELEMENTS EXIST ==========
+            if (!bookingForm || !formPage || !ticketPage) {
+                console.error('Critical elements not found!');
                 return;
             }
+            console.log('All elements loaded successfully');
 
-            filteredStops.forEach(stop => {
-                const item = document.createElement('div');
-                item.className = 'autocomplete-item';
-                item.textContent = stop;
-                item.onclick = () => {
-                    targetInput.value = stop;
+            // ========== DATE INITIALIZATION ==========
+            function initializeDate() {
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const year = today.getFullYear();
+                const formattedDate = `${day}/${month}/${year}`;
+                busDateInput.value = formattedDate;
+                console.log('Date initialized:', formattedDate);
+            }
+
+            // Initialize date immediately
+            initializeDate();
+
+            // ========== STORAGE MANAGEMENT ==========
+            function getStopsFromStorage() {
+                const stops = localStorage.getItem('busStops');
+                return stops ? JSON.parse(stops) : { from: [], to: [] };
+            }
+
+            function saveStopsToStorage(stops) {
+                localStorage.setItem('busStops', JSON.stringify(stops));
+            }
+
+            function addStopToStorage(type, stop) {
+                if (!stop.trim()) return;
+                
+                const stops = getStopsFromStorage();
+                const stopUpper = stop.toUpperCase();
+                
+                if (!stops[type].includes(stopUpper)) {
+                    stops[type].unshift(stopUpper);
+                    if (stops[type].length > 10) stops[type].pop();
+                    saveStopsToStorage(stops);
+                }
+            }
+
+            // ========== AUTOCOMPLETE ==========
+            function filterStops(input, type) {
+                const stops = getStopsFromStorage();
+                const list = stops[type];
+                const filtered = list.filter(stop => 
+                    stop.toLowerCase().includes(input.toLowerCase())
+                );
+                return filtered;
+            }
+
+            function showAutocompleteSuggestions(input, filteredStops, listElement, targetInput) {
+                listElement.innerHTML = '';
+                
+                if (input.trim() === '' || filteredStops.length === 0) {
                     listElement.classList.remove('active');
-                };
-                listElement.appendChild(item);
-            });
+                    return;
+                }
 
-            listElement.classList.add('active');
-        }
+                filteredStops.forEach(stop => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.textContent = stop;
+                    item.onclick = () => {
+                        targetInput.value = stop;
+                        listElement.classList.remove('active');
+                    };
+                    listElement.appendChild(item);
+                });
 
-        // From stop autocomplete
-        fromStopInput.addEventListener('input', () => {
-            const filtered = filterStops(fromStopInput.value, 'from');
-            showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
-        });
+                listElement.classList.add('active');
+            }
 
-        fromStopInput.addEventListener('blur', () => {
-            setTimeout(() => fromList.classList.remove('active'), 200);
-        });
-
-        fromStopInput.addEventListener('focus', () => {
-            if (fromStopInput.value.trim()) {
+            // From stop autocomplete
+            fromStopInput.addEventListener('input', () => {
                 const filtered = filterStops(fromStopInput.value, 'from');
                 showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
-            }
-        });
+            });
 
-        // To stop autocomplete
-        toStopInput.addEventListener('input', () => {
-            const filtered = filterStops(toStopInput.value, 'to');
-            showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
-        });
+            fromStopInput.addEventListener('blur', () => {
+                setTimeout(() => fromList.classList.remove('active'), 200);
+            });
 
-        toStopInput.addEventListener('blur', () => {
-            setTimeout(() => toList.classList.remove('active'), 200);
-        });
+            fromStopInput.addEventListener('focus', () => {
+                if (fromStopInput.value.trim()) {
+                    const filtered = filterStops(fromStopInput.value, 'from');
+                    showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
+                }
+            });
 
-        toStopInput.addEventListener('focus', () => {
-            if (toStopInput.value.trim()) {
+            // To stop autocomplete
+            toStopInput.addEventListener('input', () => {
                 const filtered = filterStops(toStopInput.value, 'to');
                 showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
-            }
-        });
+            });
 
-        // ========== DATE INITIALIZATION ==========
-        function initializeDate() {
-            const today = new Date();
-            const day = String(today.getDate()).padStart(2, '0');
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const year = today.getFullYear();
-            busDateInput.value = `${day}/${month}/${year}`;
-        }
+            toStopInput.addEventListener('blur', () => {
+                setTimeout(() => toList.classList.remove('active'), 200);
+            });
 
-        initializeDate();
+            toStopInput.addEventListener('focus', () => {
+                if (toStopInput.value.trim()) {
+                    const filtered = filterStops(toStopInput.value, 'to');
+                    showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
+                }
+            });
 
-        // ========== FORM SUBMISSION ==========
-        bookingForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+            // ========== FORM SUBMISSION ==========
+            bookingForm.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+                e.preventDefault();
 
-            // Get form values
-            const busNo = busNoInput.value.trim();
-            const busDate = busDateInput.value;
-            const fromStop = fromStopInput.value.trim().toUpperCase();
-            const toStop = toStopInput.value.trim().toUpperCase();
-            const amount = parseFloat(amountInput.value).toFixed(2);
+                // Validate inputs
+                if (!busNoInput.value.trim() || !fromStopInput.value.trim() || !toStopInput.value.trim() || !amountInput.value) {
+                    alert('Please fill all fields');
+                    console.log('Form validation failed');
+                    return;
+                }
 
-            // Get current time (HH:MM format)
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const currentTime = `${hours}:${minutes}`;
+                // Get form values
+                const busNo = busNoInput.value.trim();
+                const busDate = busDateInput.value;
+                const fromStop = fromStopInput.value.trim().toUpperCase();
+                const toStop = toStopInput.value.trim().toUpperCase();
+                const amount = parseFloat(amountInput.value).toFixed(2);
 
-            // Generate ticket number (9-digit timestamp-based)
-            const ticketNum = Math.floor(Date.now() / 1000) % 1000000000;
-
-            // Save stops to storage
-            addStopToStorage('from', fromStop);
-            addStopToStorage('to', toStop);
-
-            // Update ticket display
-            ticketBusNo.textContent = busNo;
-            ticketNumber.textContent = ticketNum;
-            ticketDateDisplay.textContent = busDate;
-            ticketTimeDisplay.textContent = currentTime;
-            ticketFromDisplay.textContent = fromStop;
-            ticketToDisplay.textContent = toStop;
-            ticketAmountDisplay.textContent = amount;
-
-            // Switch to ticket page
-            formPage.classList.remove('active');
-            ticketPage.classList.add('active');
-        });
-
-        // ========== GO BACK BUTTON ==========
-        goBackBtn.addEventListener('click', () => {
-            // Clear form
-            bookingForm.reset();
-            initializeDate();
-            fromList.classList.remove('active');
-            toList.classList.remove('active');
-
-            // Switch back to form
-            ticketPage.classList.remove('
+              
