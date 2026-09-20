@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Ticket Booking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ========== FORM PAGE ========== */
+        .form-page {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: none;
+        }
+
+        .form-page.active {
+            display: block;
+        }
+
+        .form-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        /* Autocomplete dropdown */
+        .autocomplete-list {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            border-radius: 0 0 10px 10px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .autocomplete-list.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .form-group-wrapper {
+            position: relative;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .buy-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ========== TICKET PAGE ========== */
+        .ticket-page {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: none;
+        }
+
+        .ticket-page.active {
+            display: block;
+        }
+
+        .ticket-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .ticket-header h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .ticket-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .ticket-container {
+            background: #e8d4f8;
+            border-radius: 15px;
+            padding: 25px 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .ticket-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #999;
+        }
+
+        .ticket-row:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .ticket-label {
+            font-size: 12px;
+            color: #555;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ticket-value {
+            font-size: 16px;
+            color: #000;
+            font-weight: 600;
+            text-align: right;
+            max-width: 50%;
+            word-break: break-word;
+        }
+
+        .ticket-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .ticket-section h3 {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .ticket-section p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .ticket-location {
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+            margin: 15px 0;
+        }
+
+        .ticket-routes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .ticket-route {
+            text-align: center;
+            flex: 1;
+        }
+
+        .ticket-route-location {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 5px;
+        }
+
+        .ticket-route-time {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .ticket-arrow {
+            font-size: 24px;
+            color: #667eea;
+            margin: 0 10px;
+        }
+
+        .ticket-amount {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .ticket-amount-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .ticket-amount-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .ticket-footer {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #999;
+            font-style: italic;
+        }
+
+        .go-back-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .go-back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .go-back-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+                border-radius: 0;
+            }
+
+            .form-page,
+            .ticket-page {
+                padding: 20px 15px;
+            }
+
+            .form-header h1 {
+                font-size: 24px;
+            }
+
+            .ticket-container {
+                padding: 20px 15px;
+            }
+
+            .ticket-amount-value {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ========== FORM PAGE ========== -->
+        <div class="form-page active">
+            <div class="form-header">
+                <h1>Book Your Ticket</h1>
+                <p>Quick and Easy Booking</p>
+            </div>
+
+            <form id="bookingForm">
+                <!-- Bus Number -->
+                <div class="form-group">
+                    <label for="busNo">Bus Number</label>
+                    <input type="text" id="busNo" name="busNo" placeholder="e.g., 154" required>
+                </div>
+
+                <!-- Date -->
+                <div class="form-group">
+                    <label for="busDate">Date</label>
+                    <input type="text" id="busDate" name="busDate" placeholder="DD/MM/YYYY" readonly>
+                </div>
+
+                <!-- From -->
+                <div class="form-group form-group-wrapper">
+                    <label for="fromStop">From</label>
+                    <input type="text" id="fromStop" name="fromStop" placeholder="Enter starting point" autocomplete="off" required>
+                    <div class="autocomplete-list" id="fromList"></div>
+                </div>
+
+                <!-- To -->
+                <div class="form-group form-group-wrapper">
+                    <label for="toStop">To</label>
+                    <input type="text" id="toStop" name="toStop" placeholder="Enter destination" autocomplete="off" required>
+                    <div class="autocomplete-list" id="toList"></div>
+                </div>
+
+                <!-- Amount -->
+                <div class="form-group">
+                    <label for="amount">Amount (Rs.)</label>
+                    <input type="number" id="amount" name="amount" placeholder="e.g., 15" min="1" step="0.01" required>
+                </div>
+
+                <!-- Buy Button -->
+                <button type="submit" class="buy-btn">Buy Ticket</button>
+            </form>
+        </div>
+
+        <!-- ========== TICKET PAGE ========== -->
+        <div class="ticket-page">
+            <div class="ticket-header">
+                <h2>Your bus ticket for <span id="ticketBusNo">154</span> bus is ready!</h2>
+                <p>You can view your ticket details below.</p>
+            </div>
+
+            <div class="ticket-container">
+                <!-- Bus Number and Title -->
+                <div class="ticket-section">
+                    <h3 id="ticketBusTitle">மா. பெ. க. (சென்னை)</h3>
+                    <p>KATHIPARA</p>
+                </div>
+
+                <!-- Ticket Number and Date/Time -->
+                <div class="ticket-row">
+                    <div>
+                        <div class="ticket-label">T No</div>
+                        <div class="ticket-value" id="ticketNumber">420212617</div>
+                    </div>
+                    <div>
+                        <div class="ticket-label">Date</div>
+                        <div class="ticket-value" id="ticketDateDisplay">09/17/2026</div>
+                    </div>
+                    <div>
+                        <div class="ticket-label">Time</div>
+                        <div class="ticket-value" id="ticketTimeDisplay">07:18</div>
+                    </div>
+                </div>
+
+                <!-- Route Information -->
+                <div class="ticket-routes">
+                    <div class="ticket-route">
+                        <div class="ticket-route-location" id="ticketFromDisplay">KATHIPARA</div>
+                    </div>
+                    <div class="ticket-arrow">→</div>
+                    <div class="ticket-route">
+                        <div class="ticket-route-location" id="ticketToDisplay">D.L.F.</div>
+                    </div>
+                </div>
+
+                <!-- Amount -->
+                <div class="ticket-amount">
+                    <div class="ticket-amount-label">Total Amount</div>
+                    <div class="ticket-amount-value">₹ <span id="ticketAmountDisplay">15.00</span></div>
+                </div>
+
+                <!-- Footer -->
+                <div class="ticket-footer">
+                    மொட்டார் வாகனம் விதிக்குக்குட்டட்டு
+                </div>
+            </div>
+
+            <button class="go-back-btn" id="goBackBtn">Go Back</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== INITIALIZATION ==========
+        const bookingForm = document.getElementById('bookingForm');
+        const formPage = document.querySelector('.form-page');
+        const ticketPage = document.querySelector('.ticket-page');
+        const goBackBtn = document.getElementById('goBackBtn');
+
+        // Form inputs
+        const busNoInput = document.getElementById('busNo');
+        const busDateInput = document.getElementById('busDate');
+        const fromStopInput = document.getElementById('fromStop');
+        const toStopInput = document.getElementById('toStop');
+        const amountInput = document.getElementById('amount');
+
+        // Autocomplete lists
+        const fromList = document.getElementById('fromList');
+        const toList = document.getElementById('toList');
+
+        // Ticket display elements
+        const ticketBusNo = document.getElementById('ticketBusNo');
+        const ticketNumber = document.getElementById('ticketNumber');
+        const ticketDateDisplay = document.getElementById('ticketDateDisplay');
+        const ticketTimeDisplay = document.getElementById('ticketTimeDisplay');
+        const ticketFromDisplay = document.getElementById('ticketFromDisplay');
+        const ticketToDisplay = document.getElementById('ticketToDisplay');
+        const ticketAmountDisplay = document.getElementById('ticketAmountDisplay');
+
+        // ========== STORAGE MANAGEMENT ==========
+        function getStopsFromStorage() {
+            const stops = localStorage.getItem('busStops');
+            return stops ? JSON.parse(stops) : { from: [], to: [] };
+        }
+
+        function saveStopsToStorage(stops) {
+            localStorage.setItem('busStops', JSON.stringify(stops));
+        }
+
+        function addStopToStorage(type, stop) {
+            if (!stop.trim()) return;
+            
+            const stops = getStopsFromStorage();
+            const stopUpper = stop.toUpperCase();
+            
+            if (!stops[type].includes(stopUpper)) {
+                stops[type].unshift(stopUpper);
+                if (stops[type].length > 10) stops[type].pop(); // Keep only last 10
+                saveStopsToStorage(stops);
+            }
+        }
+
+        // ========== AUTOCOMPLETE ==========
+        function filterStops(input, type) {
+            const stops = getStopsFromStorage();
+            const list = stops[type];
+            const filtered = list.filter(stop => 
+                stop.toLowerCase().includes(input.toLowerCase())
+            );
+            return filtered;
+        }
+
+        function showAutocompleteSuggestions(input, filteredStops, listElement, targetInput) {
+            listElement.innerHTML = '';
+            
+            if (input.trim() === '' || filteredStops.length === 0) {
+                listElement.classList.remove('active');
+                return;
+            }
+
+            filteredStops.forEach(stop => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.textContent = stop;
+                item.onclick = () => {
+                    targetInput.value = stop;
+                    listElement.classList.remove('active');
+                };
+                listElement.appendChild(item);
+            });
+
+            listElement.classList.add('active');
+        }
+
+        // From stop autocomplete
+        fromStopInput.addEventListener('input', () => {
+            const filtered = filterStops(fromStopInput.value, 'from');
+            showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
+        });
+
+        fromStopInput.addEventListener('blur', () => {
+            setTimeout(() => fromList.classList.remove('active'), 200);
+        });
+
+        fromStopInput.addEventListener('focus', () => {
+            if (fromStopInput.value.trim()) {
+                const filtered = filterStops(fromStopInput.value, 'from');
+                showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
+            }
+        });
+
+        // To stop autocomplete
+        toStopInput.addEventListener('input', () => {
+            const filtered = filterStops(toStopInput.value, 'to');
+            showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
+        });
+
+        toStopInput.addEventListener('blur', () => {
+            setTimeout(() => toList.classList.remove('active'), 200);
+        });
+
+        toStopInput.addEventListener('focus', () => {
+            if (toStopInput.value.trim()) {
+                const filtered = filterStops(toStopInput.value, 'to');
+                showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
+            }
+        });
+
+        // ========== DATE INITIALIZATION ==========
+        function initializeDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            busDateInput.value = `${day}/${month}/${year}`;
+        }
+
+        initializeDate();
+
+        // ========== FORM SUBMISSION ==========
+        bookingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Get form values
+            const busNo = busNoInput.value.trim();
+            const busDate = busDateInput.value;
+            const fromStop = fromStopInput.value.trim().toUpperCase();
+            const toStop = toStopInput.value.trim().toUpperCase();
+            const amount = parseFloat(amountInput.value).toFixed(2);
+
+            // Get current time (HH:MM format)
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+
+            // Generate ticket number (9-digit timestamp-based)
+            const ticketNum = Math.floor(Date.now() / 1000) % 1000000000;
+
+            // Save stops to storage
+            addStopToStorage('from', fromStop);
+            addStopToStorage('to', toStop);
+
+            // Update ticket display
+            ticketBusNo.textContent = busNo;
+            ticketNumber.textContent = ticketNum;
+            ticketDateDisplay.textContent = busDate;
+            ticketTimeDisplay.textContent = currentTime;
+            ticketFromDisplay.textContent = fromStop;
+            ticketToDisplay.textContent = toStop;
+            ticketAmountDisplay.textContent = amount;
+
+            // Switch to ticket page
+            formPage.classList.remove('active');
+            ticketPage.classList.add('active');
+        });
+
+        // ========== GO BACK BUTTON ==========
+        goBackBtn.addEventListener('click', () => {
+            // Clear form
+            bookingForm.reset();
+            initializeDate();
+            fromList.classList.remove('active');
+            toList.classList.remove('active');
+
+            // Switch back to form
+            ticketPage.classList.remove('
