@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Ticket Booking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+
+        /* ========== PAGE DISPLAY ==========*/
+        .page {
+            display: none;
+            padding: 30px 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .page.show {
+            display: block;
+        }
+
+        /* ========== FORM PAGE ==========*/
+        .form-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            background: white;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-group-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            top: 100%;
+            left: 0;
+            right: 0;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ========== TICKET PAGE ==========*/
+        .ticket-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .ticket-header h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .ticket-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* ===== TICKET STYLING (Like Image) ===== */
+        .ticket-wrapper {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .ticket-container {
+            background: white;
+            padding: 30px 20px;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        /* Wavy bottom edge like the image */
+        .ticket-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            clip-path: polygon(0 50%, 2% 45%, 4% 55%, 6% 50%, 8% 45%, 10% 55%, 12% 50%, 14% 45%, 16% 55%, 18% 50%, 20% 45%, 22% 55%, 24% 50%, 26% 45%, 28% 55%, 30% 50%, 32% 45%, 34% 55%, 36% 50%, 38% 45%, 40% 55%, 42% 50%, 44% 45%, 46% 55%, 48% 50%, 50% 45%, 52% 55%, 54% 50%, 56% 45%, 58% 55%, 60% 50%, 62% 45%, 64% 55%, 66% 50%, 68% 45%, 70% 55%, 72% 50%, 74% 45%, 76% 55%, 78% 50%, 80% 45%, 82% 55%, 84% 50%, 86% 45%, 88% 55%, 90% 50%, 92% 45%, 94% 55%, 96% 50%, 98% 45%, 100% 55%, 100% 100%, 0 100%);
+        }
+
+        /* MTC Watermark background text */
+        .ticket-container::before {
+            content: 'M T C  C H E N N A I';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.03);
+            white-space: nowrap;
+            z-index: 0;
+            width: 200%;
+            text-align: center;
+        }
+
+        .ticket-content {
+            position: relative;
+            z-index: 1;
+            padding-bottom: 20px;
+        }
+
+        .ticket-title {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #999;
+        }
+
+        .ticket-title-tamil {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-family: Arial, sans-serif;
+        }
+
+        .ticket-title-station {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* Ticket info row */
+        .ticket-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #999;
+            text-align: center;
+        }
+
+        .ticket-info-item {
+            flex: 1;
+        }
+
+        .ticket-info-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .ticket-info-value {
+            font-size: 14px;
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* Route section */
+        .ticket-route-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #999;
+            text-align: center;
+        }
+
+        .ticket-route-stop {
+            flex: 1;
+        }
+
+        .ticket-route-stop-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 3px;
+        }
+
+        .ticket-arrow {
+            color: #667eea;
+            font-size: 20px;
+            margin: 0 10px;
+        }
+
+        /* Amount section */
+        .ticket-amount-section {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #999;
+        }
+
+        .ticket-amount-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .ticket-amount-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .ticket-amount-rupee {
+            font-size: 28px;
+            margin-right: 5px;
+        }
+
+        /* Footer */
+        .ticket-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            margin-top: 15px;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .go-back-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .go-back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            .page {
+                padding: 20px 15px;
+            }
+            .ticket-container {
+                padding: 25px 15px;
+            }
+            .ticket-title-tamil {
+                font-size: 16px;
+            }
+            .ticket-amount-value {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ========== FORM PAGE ==========-->
+        <div id="formPage" class="page show">
+            <div class="form-header">
+                <h1>Book Your Ticket</h1>
+                <p>Quick and Easy Booking</p>
+            </div>
+
+            <form id="ticketForm">
+                <!-- Bus Number -->
+                <div class="form-group">
+                    <label>Bus Number</label>
+                    <input type="text" id="inputBusNo" placeholder="e.g., 154" required>
+                </div>
+
+                <!-- Date -->
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" id="inputDate" placeholder="DD/MM/YYYY" readonly>
+                </div>
+
+                <!-- From -->
+                <div class="form-group form-group-wrapper">
+                    <label>From</label>
+                    <input type="text" id="inputFrom" placeholder="e.g., kathipara (type lowercase)" autocomplete="off" required>
+                    <div class="autocomplete-list" id="fromSuggestions"></div>
+                </div>
+
+                <!-- To -->
+                <div class="form-group form-group-wrapper">
+                    <label>To</label>
+                    <input type="text" id="inputTo" placeholder="e.g., dlf (type lowercase)" autocomplete="off" required>
+                    <div class="autocomplete-list" id="toSuggestions"></div>
+                </div>
+
+                <!-- Amount -->
+                <div class="form-group">
+                    <label>Amount (Rs.)</label>
+                    <input type="number" id="inputAmount" placeholder="e.g., 15" min="1" step="0.01" required>
+                </div>
+
+                <!-- Buy Button -->
+                <button type="submit" class="buy-btn">Buy Ticket</button>
+            </form>
+        </div>
+
+        <!-- ========== TICKET PAGE ==========-->
+        <div id="ticketPage" class="page">
+            <div class="ticket-header">
+                <h2>Your bus ticket for <span id="displayBusNo">154</span> bus is ready!</h2>
+                <p>You can view your ticket details below.</p>
+            </div>
+
+            <div class="ticket-wrapper">
+                <div class="ticket-container">
+                    <div class="ticket-content">
+                        <!-- Title with dynamic Tamil text -->
+                        <div class="ticket-title">
+                            <div class="ticket-title-tamil" id="displayTamil">மா. பெ. க. (சென்னை)</div>
+                            <div class="ticket-title-station" id="displayFromTitle">KATHIPARA</div>
+                        </div>
+
+                        <!-- Ticket Info (T No, Date, Time) -->
+                        <div class="ticket-info">
+                            <div class="ticket-info-item">
+                                <div class="ticket-info-label">T No</div>
+                                <div class="ticket-info-value" id="displayTicketNo">420212617</div>
+                            </div>
+                            <div class="ticket-info-item">
+                                <div class="ticket-info-label">Date</div>
+                                <div class="ticket-info-value" id="displayDate">09/17/2026</div>
+                            </div>
+                            <div class="ticket-info-item">
+                                <div class="ticket-info-label">Time</div>
+                                <div class="ticket-info-value" id="displayTime">07:18</div>
+                            </div>
+                        </div>
+
+                        <!-- Route (From → To) -->
+                        <div class="ticket-route-section">
+                            <div class="ticket-route-stop">
+                                <div class="ticket-route-stop-name" id="displayFrom">KATHIPARA</div>
+                            </div>
+                            <div class="ticket-arrow">→</div>
+                            <div class="ticket-route-stop">
+                                <div class="ticket-route-stop-name" id="displayTo">D.L.F.</div>
+                            </div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="ticket-amount-section">
+                            <div class="ticket-amount-label">Total Amount</div>
+                            <div class="ticket-amount-value">
+                                <span class="ticket-amount-rupee">₹</span><span id="displayAmount">15.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="ticket-footer">
+                            <div>மொட்டார் வாகனம் விதிக்குக்குட்டட்டு</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="go-back-btn" id="goBackBtn">Go Back</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Script loaded - waiting for page to load...');
+
+        // ========== WAIT FOR PAGE LOAD ==========
+        window.addEventListener('load', function() {
+            console.log('✅ Page fully loaded - initializing app...');
+            initApp();
+        });
+
+        function initApp() {
+            // DOM Elements
+            const formPage = document.getElementById('formPage');
+            const ticketPage = document.getElementById('ticketPage');
+            const ticketForm = document.getElementById('ticketForm');
+            const goBackBtn = document.getElementById('goBackBtn');
+
+            // Form inputs
+            const inputBusNo = document.getElementById('inputBusNo');
+            const inputDate = document.getElementById('inputDate');
+            const inputFrom = document.getElementById('inputFrom');
+            const inputTo = document.getElementById('inputTo');
+            const inputAmount = document.getElementById('inputAmount');
+
+            // Ticket displays
+            const displayBusNo = document.getElementById('displayBusNo');
+            const displayTicketNo = document.getElementById('displayTicketNo');
+            const displayDate = document.getElementById('displayDate');
+            const displayTime = document.getElementById('displayTime');
+            const displayTamil = document.getElementById('displayTamil');
+            const displayFromTitle = document.getElementById('displayFromTitle');
+            const displayFrom = document.getElementById('displayFrom');
+            const displayTo = document.getElementById('displayTo');
+            const displayAmount = document.getElementById('displayAmount');
+
+            // Autocomplete
+            const fromSuggestions = document.getElementById('fromSuggestions');
+            const toSuggestions = document.getElementById('toSuggestions');
+
+            console.log('✅ All DOM elements found and ready');
+
+            // ========== SET TODAY'S DATE ==========
+            function setTodayDate() {
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const year = today.getFullYear();
+                const dateStr = `${day}/${month}/${year}`;
+                inputDate.value = dateStr;
+                console.log('📅 Date auto-filled:', dateStr);
+            }
+
+            setTodayDate();
+
+            // ========== STORAGE FUNCTIONS ==========
+            function getSavedStops() {
+                const saved = localStorage.getItem('busStops');
+                return saved ? JSON.parse(saved) : { from: [], to: [] };
+            }
+
+            function saveSuggestion(type, value) {
+                const stops = getSavedStops();
+                const upper = value.toUpperCase();
+                console.log(`💾 Saving stop [${type}]: "${value}" → "${upper}"`);
+                if (!stops[type].includes(upper)) {
+                    stops[type].unshift(upper);
+                    stops[type] = stops[type].slice(0, 10);
+                    localStorage.setItem('busStops', JSON.stringify(stops));
+                    console.log(`✅ Stop saved. Total "${type}" stops: ${stops[type].length}`);
+                }
+            }
+
+            // ========== AUTOCOMPLETE FUNCTIONS ==========
+            function showSuggestions(input, type, listElement) {
+                const stops = getSavedStops();
+                const matches = stops[type].filter(s => 
+                    s.toLowerCase().includes(input.toLowerCase())
+                );
+
+                listElement.innerHTML = '';
+                if (input.trim() === '' || matches.length === 0) {
+                    listElement.classList.remove('show');
+                    return;
+                }
+
+                matches.forEach(stop => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.textContent = stop;
+                    item.onclick = () => {
+                        if (type === 'from') inputFrom.value = stop;
+                        else inputTo.value = stop;
+                        listElement.classList.remove('show');
+                    };
+                    listElement.appendChild(item);
+                });
+
+                listElement.classList.add('show');
+            }
+
+            // From suggestions
+            inputFrom.addEventListener('input', () => {
+                showSuggestions(inputFrom.value, 'from', fromSuggestions);
+            });
+
+            inputFrom.addEventListener('focus', () => {
+                if (inputFrom.value) showSuggestions(inputFrom.value, 'from', fromSuggestions);
+            });
+
+            inputFrom.addEventListener('blur', () => {
+                setTimeout(() => fromSuggestions.classList.remove('show'), 150);
+            });
+
+            // To suggestions
+            inputTo.addEventListener('input', () => {
+                showSuggestions(inputTo.value, 'to', toSuggestions);
+            });
+
+            inputTo.addEventListener('focus', () => {
+                if (inputTo.value) showSuggestions(inputTo.value, 'to', toSuggestions);
+            });
+
+            inputTo.addEventListener('blur', () => {
+                setTimeout(() => toSuggestions.classList.remove('show'), 150);
+            });
+
+            // ========== FORM SUBMIT ==========
+            ticketForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('%c🎟️ FORM SUBMITTED', 'color: red; font-size: 14px; font-weight: bold;');
+
+                // Get values
+                const busNo = inputBusNo.value.trim();
+                const date = inputDate.value;
+                const fromInput = inputFrom.value.trim();
+                const toInput = inputTo.value.trim();
+                const amount = parseFloat(inputAmount.value).toFixed(2);
+
+                console.log('📝 RAW INPUT:', { busNo, fromInput, toInput, amount });
+
+                // Convert to uppercase
+                const fromStop = fromInput.toUpperCase();
+                const toStop = toInput.toUpperCase();
+
+                console.log('%c✅ CONVERTED TO UPPERCASE:', 'color: green; font-weight: bold;');
+                console.log(`   From: "${fromInput}" → "${fromStop}"`);
+                console.log(`   To: "${toInput}" → "${toStop}"`);
+
+                if (!busNo || !fromStop || !toStop || !amount) {
+                    alert('❌ Please fill all fields');
+                    return;
+                }
+
+                // Get current time
+                const now = new Date();
+                const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+                // Generate ticket number
+                const ticketNo = Math.floor(Date.now() / 1000) % 1000000000;
+
+                console.log('%c📊 TICKET DATA:', 'color: blue; font-weight: bold;');
+                console.log({ busNo, date, fromStop, toStop, amount, time, ticketNo });
+
+                // Save suggestions
+                saveSuggestion('from', fromStop);
+                saveSuggestion('to', toStop);
+
+                // Update ticket display
+                displayBusNo.textContent = busNo;
+                displayTicketNo.textContent = ticketNo;
+                displayDate.textContent = date;
+                displayTime.textContent = time;
+                displayFromTitle.textContent = fromStop;
+                displayTamil.textContent = `மா. பெ. க. (${fromStop})`;
+                displayFrom.textContent = fromStop;
+                displayTo.textContent = toStop;
+                displayAmount.textContent = amount;
+
+                console.log('%c✅ TICKET DISPLAY UPDATED', 'color: green; font-weight: bold;');
+                console.log('   Tamil text:', `மா. பெ. க. (${fromStop})`);
+
+                // Show ticket page
+                formPage.classList.remove('show');
+                ticketPage.classList.add('show');
+                console.log('%c✅ SWITCHED TO TICKET PAGE', 'color: green; font-weight: bold;');
+            });
+
+            // ========== GO BACK BUTTON ==========
+            goBackBtn.addEventListener('click', function() {
+                console.log('%c↩️ GO BACK CLICKED', 'color: orange; font-size: 14px; font-weight: bold;');
+                
+                // Clear form completely
+                ticketForm.reset();
+                setTodayDate();
+                fromSuggestions.classList.remove('show');
+                toSuggestions.classList.remove('show');
+
+                console.log('✅ Form cleared');
+                console.log('✅ All fields emptied - ready for NEW TICKET');
+
+                // Switch back to form
+                ticketPage.classList.remove('show');
+                formPage.classList.add('show');
+                inputBusNo.focus();
+
+                console.log('%c✅ RETURNED TO FORM PAGE - READY FOR NEW BOOKING', 'color: green; font-weight: bold;');
+            });
+
+            console.log('%c✅ APP INITIALIZED SUCCESSFULLY', 'color: green; font-size: 16px; font-weight: bold;');
+            console.log('💡 Try typing lowercase in From/To fields - watch console for uppercase conversion!');
+        }
+    </script>
+</body>
+</html>
