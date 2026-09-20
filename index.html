@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -30,18 +30,19 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
-        /* ========== FORM PAGE ========== */
-        .form-page {
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+        /* ========== PAGE DISPLAY ==========*/
+        .page {
             display: none;
+            padding: 30px 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        .form-page.active {
+        .page.show {
             display: block;
         }
 
+        /* ========== FORM PAGE ==========*/
         .form-header {
             color: white;
             text-align: center;
@@ -71,8 +72,7 @@
             margin-bottom: 8px;
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             width: 100%;
             padding: 12px 15px;
             border: none;
@@ -84,8 +84,7 @@
             transition: all 0.3s ease;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
             background: white;
@@ -95,7 +94,10 @@
             color: #999;
         }
 
-        /* Autocomplete dropdown */
+        .form-group-wrapper {
+            position: relative;
+        }
+
         .autocomplete-list {
             position: absolute;
             background: white;
@@ -104,12 +106,14 @@
             width: 100%;
             max-height: 150px;
             overflow-y: auto;
-            border-radius: 0 0 10px 10px;
             display: none;
             z-index: 1000;
+            top: 100%;
+            left: 0;
+            right: 0;
         }
 
-        .autocomplete-list.active {
+        .autocomplete-list.show {
             display: block;
         }
 
@@ -123,14 +127,6 @@
 
         .autocomplete-item:hover {
             background: #f0f0f0;
-        }
-
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-
-        .form-group-wrapper {
-            position: relative;
         }
 
         .buy-btn {
@@ -152,22 +148,7 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .buy-btn:active {
-            transform: translateY(0);
-        }
-
-        /* ========== TICKET PAGE ========== */
-        .ticket-page {
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: none;
-        }
-
-        .ticket-page.active {
-            display: block;
-        }
-
+        /* ========== TICKET PAGE ==========*/
         .ticket-header {
             color: white;
             text-align: center;
@@ -221,8 +202,6 @@
             color: #000;
             font-weight: 600;
             text-align: right;
-            max-width: 50%;
-            word-break: break-word;
         }
 
         .ticket-section {
@@ -240,13 +219,6 @@
         .ticket-section p {
             font-size: 13px;
             color: #666;
-        }
-
-        .ticket-location {
-            font-size: 20px;
-            font-weight: bold;
-            color: #000;
-            margin: 15px 0;
         }
 
         .ticket-routes {
@@ -269,11 +241,6 @@
             font-weight: bold;
             color: #000;
             margin-bottom: 5px;
-        }
-
-        .ticket-route-time {
-            font-size: 13px;
-            color: #666;
         }
 
         .ticket-arrow {
@@ -328,76 +295,57 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .go-back-btn:active {
-            transform: translateY(0);
-        }
-
-        /* Responsive */
         @media (max-width: 480px) {
             .container {
                 max-width: 100%;
                 border-radius: 0;
             }
-
-            .form-page,
-            .ticket-page {
+            .page {
                 padding: 20px 15px;
-            }
-
-            .form-header h1 {
-                font-size: 24px;
-            }
-
-            .ticket-container {
-                padding: 20px 15px;
-            }
-
-            .ticket-amount-value {
-                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ========== FORM PAGE ========== -->
-        <div class="form-page active">
+        <!-- ========== FORM PAGE ==========-->
+        <div id="formPage" class="page show">
             <div class="form-header">
                 <h1>Book Your Ticket</h1>
                 <p>Quick and Easy Booking</p>
             </div>
 
-            <form id="bookingForm">
+            <form id="ticketForm">
                 <!-- Bus Number -->
                 <div class="form-group">
-                    <label for="busNo">Bus Number</label>
-                    <input type="text" id="busNo" name="busNo" placeholder="e.g., 154" required>
+                    <label>Bus Number</label>
+                    <input type="text" id="inputBusNo" placeholder="e.g., 154" required>
                 </div>
 
                 <!-- Date -->
                 <div class="form-group">
-                    <label for="busDate">Date</label>
-                    <input type="text" id="busDate" name="busDate" placeholder="DD/MM/YYYY" readonly>
+                    <label>Date</label>
+                    <input type="text" id="inputDate" placeholder="DD/MM/YYYY" readonly>
                 </div>
 
                 <!-- From -->
                 <div class="form-group form-group-wrapper">
-                    <label for="fromStop">From</label>
-                    <input type="text" id="fromStop" name="fromStop" placeholder="Enter starting point" autocomplete="off" required>
-                    <div class="autocomplete-list" id="fromList"></div>
+                    <label>From</label>
+                    <input type="text" id="inputFrom" placeholder="Enter starting point" autocomplete="off" required>
+                    <div class="autocomplete-list" id="fromSuggestions"></div>
                 </div>
 
                 <!-- To -->
                 <div class="form-group form-group-wrapper">
-                    <label for="toStop">To</label>
-                    <input type="text" id="toStop" name="toStop" placeholder="Enter destination" autocomplete="off" required>
-                    <div class="autocomplete-list" id="toList"></div>
+                    <label>To</label>
+                    <input type="text" id="inputTo" placeholder="Enter destination" autocomplete="off" required>
+                    <div class="autocomplete-list" id="toSuggestions"></div>
                 </div>
 
                 <!-- Amount -->
                 <div class="form-group">
-                    <label for="amount">Amount (Rs.)</label>
-                    <input type="number" id="amount" name="amount" placeholder="e.g., 15" min="1" step="0.01" required>
+                    <label>Amount (Rs.)</label>
+                    <input type="number" id="inputAmount" placeholder="e.g., 15" min="1" step="0.01" required>
                 </div>
 
                 <!-- Buy Button -->
@@ -405,51 +353,51 @@
             </form>
         </div>
 
-        <!-- ========== TICKET PAGE ========== -->
-        <div class="ticket-page">
+        <!-- ========== TICKET PAGE ==========-->
+        <div id="ticketPage" class="page">
             <div class="ticket-header">
-                <h2>Your bus ticket for <span id="ticketBusNo">154</span> bus is ready!</h2>
+                <h2>Your bus ticket for <span id="displayBusNo">154</span> bus is ready!</h2>
                 <p>You can view your ticket details below.</p>
             </div>
 
             <div class="ticket-container">
-                <!-- Bus Number and Title -->
+                <!-- Bus Title -->
                 <div class="ticket-section">
-                    <h3 id="ticketBusTitle">மா. பெ. க. (சென்னை)</h3>
+                    <h3>மா. பெ. க. (சென்னை)</h3>
                     <p>KATHIPARA</p>
                 </div>
 
-                <!-- Ticket Number and Date/Time -->
+                <!-- Ticket Info -->
                 <div class="ticket-row">
                     <div>
                         <div class="ticket-label">T No</div>
-                        <div class="ticket-value" id="ticketNumber">420212617</div>
+                        <div class="ticket-value" id="displayTicketNo">420212617</div>
                     </div>
                     <div>
                         <div class="ticket-label">Date</div>
-                        <div class="ticket-value" id="ticketDateDisplay">09/17/2026</div>
+                        <div class="ticket-value" id="displayDate">09/17/2026</div>
                     </div>
                     <div>
                         <div class="ticket-label">Time</div>
-                        <div class="ticket-value" id="ticketTimeDisplay">07:18</div>
+                        <div class="ticket-value" id="displayTime">07:18</div>
                     </div>
                 </div>
 
-                <!-- Route Information -->
+                <!-- Routes -->
                 <div class="ticket-routes">
                     <div class="ticket-route">
-                        <div class="ticket-route-location" id="ticketFromDisplay">KATHIPARA</div>
+                        <div class="ticket-route-location" id="displayFrom">KATHIPARA</div>
                     </div>
                     <div class="ticket-arrow">→</div>
                     <div class="ticket-route">
-                        <div class="ticket-route-location" id="ticketToDisplay">D.L.F.</div>
+                        <div class="ticket-route-location" id="displayTo">D.L.F.</div>
                     </div>
                 </div>
 
                 <!-- Amount -->
                 <div class="ticket-amount">
                     <div class="ticket-amount-label">Total Amount</div>
-                    <div class="ticket-amount-value">₹ <span id="ticketAmountDisplay">15.00</span></div>
+                    <div class="ticket-amount-value">₹ <span id="displayAmount">15.00</span></div>
                 </div>
 
                 <!-- Footer -->
@@ -463,163 +411,181 @@
     </div>
 
     <script>
-        // ========== WAIT FOR DOM LOAD ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing...');
+        // ========== WAIT FOR PAGE LOAD ==========
+        window.addEventListener('load', function() {
+            console.log('✅ Page fully loaded');
+            initApp();
+        });
 
-            // ========== INITIALIZATION ==========
-            const bookingForm = document.getElementById('bookingForm');
-            const formPage = document.querySelector('.form-page');
-            const ticketPage = document.querySelector('.ticket-page');
+        function initApp() {
+            // DOM Elements
+            const formPage = document.getElementById('formPage');
+            const ticketPage = document.getElementById('ticketPage');
+            const ticketForm = document.getElementById('ticketForm');
             const goBackBtn = document.getElementById('goBackBtn');
 
             // Form inputs
-            const busNoInput = document.getElementById('busNo');
-            const busDateInput = document.getElementById('busDate');
-            const fromStopInput = document.getElementById('fromStop');
-            const toStopInput = document.getElementById('toStop');
-            const amountInput = document.getElementById('amount');
+            const inputBusNo = document.getElementById('inputBusNo');
+            const inputDate = document.getElementById('inputDate');
+            const inputFrom = document.getElementById('inputFrom');
+            const inputTo = document.getElementById('inputTo');
+            const inputAmount = document.getElementById('inputAmount');
 
-            // Autocomplete lists
-            const fromList = document.getElementById('fromList');
-            const toList = document.getElementById('toList');
+            // Ticket displays
+            const displayBusNo = document.getElementById('displayBusNo');
+            const displayTicketNo = document.getElementById('displayTicketNo');
+            const displayDate = document.getElementById('displayDate');
+            const displayTime = document.getElementById('displayTime');
+            const displayFrom = document.getElementById('displayFrom');
+            const displayTo = document.getElementById('displayTo');
+            const displayAmount = document.getElementById('displayAmount');
 
-            // Ticket display elements
-            const ticketBusNo = document.getElementById('ticketBusNo');
-            const ticketNumber = document.getElementById('ticketNumber');
-            const ticketDateDisplay = document.getElementById('ticketDateDisplay');
-            const ticketTimeDisplay = document.getElementById('ticketTimeDisplay');
-            const ticketFromDisplay = document.getElementById('ticketFromDisplay');
-            const ticketToDisplay = document.getElementById('ticketToDisplay');
-            const ticketAmountDisplay = document.getElementById('ticketAmountDisplay');
+            // Autocomplete
+            const fromSuggestions = document.getElementById('fromSuggestions');
+            const toSuggestions = document.getElementById('toSuggestions');
 
-            // ========== VERIFY ALL ELEMENTS EXIST ==========
-            if (!bookingForm || !formPage || !ticketPage) {
-                console.error('Critical elements not found!');
-                return;
-            }
-            console.log('All elements loaded successfully');
-
-            // ========== DATE INITIALIZATION ==========
-            function initializeDate() {
+            // ========== SET TODAY'S DATE ==========
+            function setTodayDate() {
                 const today = new Date();
                 const day = String(today.getDate()).padStart(2, '0');
                 const month = String(today.getMonth() + 1).padStart(2, '0');
                 const year = today.getFullYear();
-                const formattedDate = `${day}/${month}/${year}`;
-                busDateInput.value = formattedDate;
-                console.log('Date initialized:', formattedDate);
+                inputDate.value = `${day}/${month}/${year}`;
+                console.log('✅ Date set:', inputDate.value);
             }
 
-            // Initialize date immediately
-            initializeDate();
+            setTodayDate();
 
-            // ========== STORAGE MANAGEMENT ==========
-            function getStopsFromStorage() {
-                const stops = localStorage.getItem('busStops');
-                return stops ? JSON.parse(stops) : { from: [], to: [] };
+            // ========== AUTOCOMPLETE FUNCTIONS ==========
+            function getSavedStops() {
+                const saved = localStorage.getItem('busStops');
+                return saved ? JSON.parse(saved) : { from: [], to: [] };
             }
 
-            function saveStopsToStorage(stops) {
+            function saveSuggestion(type, value) {
+                const stops = getSavedStops();
+                const upper = value.toUpperCase();
+                if (!stops[type].includes(upper)) {
+                    stops[type].unshift(upper);
+                    stops[type] = stops[type].slice(0, 10); // Keep only 10
+                }
                 localStorage.setItem('busStops', JSON.stringify(stops));
             }
 
-            function addStopToStorage(type, stop) {
-                if (!stop.trim()) return;
-                
-                const stops = getStopsFromStorage();
-                const stopUpper = stop.toUpperCase();
-                
-                if (!stops[type].includes(stopUpper)) {
-                    stops[type].unshift(stopUpper);
-                    if (stops[type].length > 10) stops[type].pop();
-                    saveStopsToStorage(stops);
-                }
-            }
-
-            // ========== AUTOCOMPLETE ==========
-            function filterStops(input, type) {
-                const stops = getStopsFromStorage();
-                const list = stops[type];
-                const filtered = list.filter(stop => 
-                    stop.toLowerCase().includes(input.toLowerCase())
+            function showSuggestions(input, type, listElement) {
+                const stops = getSavedStops();
+                const matches = stops[type].filter(s => 
+                    s.toLowerCase().includes(input.toLowerCase())
                 );
-                return filtered;
-            }
 
-            function showAutocompleteSuggestions(input, filteredStops, listElement, targetInput) {
                 listElement.innerHTML = '';
-                
-                if (input.trim() === '' || filteredStops.length === 0) {
-                    listElement.classList.remove('active');
+                if (input.trim() === '' || matches.length === 0) {
+                    listElement.classList.remove('show');
                     return;
                 }
 
-                filteredStops.forEach(stop => {
+                matches.forEach(stop => {
                     const item = document.createElement('div');
                     item.className = 'autocomplete-item';
                     item.textContent = stop;
                     item.onclick = () => {
-                        targetInput.value = stop;
-                        listElement.classList.remove('active');
+                        if (type === 'from') inputFrom.value = stop;
+                        else inputTo.value = stop;
+                        listElement.classList.remove('show');
                     };
                     listElement.appendChild(item);
                 });
 
-                listElement.classList.add('active');
+                listElement.classList.add('show');
             }
 
-            // From stop autocomplete
-            fromStopInput.addEventListener('input', () => {
-                const filtered = filterStops(fromStopInput.value, 'from');
-                showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
+            // From suggestions
+            inputFrom.addEventListener('input', () => {
+                showSuggestions(inputFrom.value, 'from', fromSuggestions);
             });
 
-            fromStopInput.addEventListener('blur', () => {
-                setTimeout(() => fromList.classList.remove('active'), 200);
+            inputFrom.addEventListener('focus', () => {
+                if (inputFrom.value) showSuggestions(inputFrom.value, 'from', fromSuggestions);
             });
 
-            fromStopInput.addEventListener('focus', () => {
-                if (fromStopInput.value.trim()) {
-                    const filtered = filterStops(fromStopInput.value, 'from');
-                    showAutocompleteSuggestions(fromStopInput.value, filtered, fromList, fromStopInput);
-                }
+            inputFrom.addEventListener('blur', () => {
+                setTimeout(() => fromSuggestions.classList.remove('show'), 150);
             });
 
-            // To stop autocomplete
-            toStopInput.addEventListener('input', () => {
-                const filtered = filterStops(toStopInput.value, 'to');
-                showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
+            // To suggestions
+            inputTo.addEventListener('input', () => {
+                showSuggestions(inputTo.value, 'to', toSuggestions);
             });
 
-            toStopInput.addEventListener('blur', () => {
-                setTimeout(() => toList.classList.remove('active'), 200);
+            inputTo.addEventListener('focus', () => {
+                if (inputTo.value) showSuggestions(inputTo.value, 'to', toSuggestions);
             });
 
-            toStopInput.addEventListener('focus', () => {
-                if (toStopInput.value.trim()) {
-                    const filtered = filterStops(toStopInput.value, 'to');
-                    showAutocompleteSuggestions(toStopInput.value, filtered, toList, toStopInput);
-                }
+            inputTo.addEventListener('blur', () => {
+                setTimeout(() => toSuggestions.classList.remove('show'), 150);
             });
 
-            // ========== FORM SUBMISSION ==========
-            bookingForm.addEventListener('submit', function(e) {
-                console.log('Form submitted');
+            // ========== FORM SUBMIT ==========
+            ticketForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('🎟️ Submitting ticket form...');
 
-                // Validate inputs
-                if (!busNoInput.value.trim() || !fromStopInput.value.trim() || !toStopInput.value.trim() || !amountInput.value) {
+                // Get values and convert to uppercase
+                const busNo = inputBusNo.value.trim();
+                const date = inputDate.value;
+                const fromStop = inputFrom.value.trim().toUpperCase();
+                const toStop = inputTo.value.trim().toUpperCase();
+                const amount = parseFloat(inputAmount.value).toFixed(2);
+
+                if (!busNo || !fromStop || !toStop || !amount) {
                     alert('Please fill all fields');
-                    console.log('Form validation failed');
                     return;
                 }
 
-                // Get form values
-                const busNo = busNoInput.value.trim();
-                const busDate = busDateInput.value;
-                const fromStop = fromStopInput.value.trim().toUpperCase();
-                const toStop = toStopInput.value.trim().toUpperCase();
-                const amount = parseFloat(amountInput.value).toFixed(2);
+                // Get current time
+                const now = new Date();
+                const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
-              
+                // Generate ticket number
+                const ticketNo = Math.floor(Date.now() / 1000) % 1000000000;
+
+                console.log('📝 Ticket data:', { busNo, date, fromStop, toStop, amount, time, ticketNo });
+
+                // Save suggestions
+                saveSuggestion('from', fromStop);
+                saveSuggestion('to', toStop);
+
+                // Update ticket display
+                displayBusNo.textContent = busNo;
+                displayTicketNo.textContent = ticketNo;
+                displayDate.textContent = date;
+                displayTime.textContent = time;
+                displayFrom.textContent = fromStop;
+                displayTo.textContent = toStop;
+                displayAmount.textContent = amount;
+
+                console.log('✅ Ticket display updated');
+
+                // Show ticket page
+                formPage.classList.remove('show');
+                ticketPage.classList.add('show');
+                console.log('✅ Switched to ticket page');
+            });
+
+            // ========== GO BACK BUTTON ==========
+            goBackBtn.addEventListener('click', function() {
+                console.log('↩️ Going back to form');
+                ticketForm.reset();
+                setTodayDate();
+                fromSuggestions.classList.remove('show');
+                toSuggestions.classList.remove('show');
+                ticketPage.classList.remove('show');
+                formPage.classList.add('show');
+                inputBusNo.focus();
+            });
+
+            console.log('✅ App initialized successfully');
+        }
+    </script>
+</body>
+</html>
